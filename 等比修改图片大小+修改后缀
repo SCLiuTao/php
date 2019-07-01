@@ -1,0 +1,87 @@
+/**
+ * @param $filepath 待压缩图片路径
+ * $maxwidth最大宽度
+ * $maxheight 最大高度
+ * $widthratio 宽度比例
+ * $heightratio高度比例
+ */
+function resizeImage($filepath,$maxwidth,$maxheight)
+{
+    list($pic_width,$pic_height,$type)=getimagesize($filepath);
+    if(($maxwidth && $pic_width > $maxwidth) || ($maxheight && $pic_height > $maxheight))
+    {
+        if($maxwidth && $pic_width>$maxwidth)
+        {
+            $widthratio = $maxwidth/$pic_width;
+            $resizewidth_tag = true;
+        }
+        if($maxheight && $pic_height>$maxheight)
+        {
+            $heightratio = $maxheight/$pic_height;
+            $resizeheight_tag = true;
+        }
+        if($resizewidth_tag && $resizeheight_tag)
+        {
+            if($widthratio<$heightratio)
+                $ratio = $widthratio;
+            else
+                $ratio = $heightratio;
+        }
+        if($resizewidth_tag && !$resizeheight_tag)
+            $ratio = $widthratio;
+        if($resizeheight_tag && !$resizewidth_tag)
+            $ratio = $heightratio;
+        $newwidth = $pic_width * $ratio;
+        $newheight = $pic_height * $ratio;
+        switch($type){
+            case 1:
+                $newim = imagecreatetruecolor($newwidth,$newheight);//PHP系统函数 返回一个图像标识符，代表了一幅大小为 x_size 和 y_size 的黑色图像。
+                $image = imagecreatefromgif($filepath);//创建一块画布，并从 GIF 文件或 URL 地址载入一副图像
+                imagecopyresampled($newim,$image,0,0,0,0,$newwidth,$newheight,$pic_width,$pic_height);//PHP系统函数
+                imagegif($newim, $filepath,75);
+                imagedestroy($newim);
+                break;
+            case 2:
+                $newim = imagecreatetruecolor($newwidth,$newheight);//PHP系统函数 返回一个图像标识符，代表了一幅大小为 x_size 和 y_size 的黑色图像。
+                $image = imagecreatefromjpeg($filepath);
+                imagecopyresampled($newim,$image,0,0,0,0,$newwidth,$newheight,$pic_width,$pic_height);//PHP系统函数
+                imagejpeg($newim, $filepath,75);
+                imagedestroy($newim);
+                break;
+            case 3:
+                $newim = imagecreatetruecolor($newwidth,$newheight);//PHP系统函数 返回一个图像标识符，代表了一幅大小为 x_size 和 y_size 的黑色图像。
+                $image = imagecreatefrompng($newim);
+                imagecopyresampled($newim,$image,0,0,0,0,$newwidth,$newheight,$pic_width,$pic_height);//PHP系统函数
+                imagepng($newim, $filepath,75);
+                imagedestroy($newim);
+                break;
+        }
+    }
+}
+
+//ImageToJPG('源文件名','目标文件名',目标宽,目标高);
+function ImageToJPG($srcFile,$dstFile,$dstX=null,$dstY=null){
+    $quality=80;//quality是可选的，范围从0（最差质量，较小文件）到100（最佳质量，最大文件）。默认值（-1）使用默认的IJG质量值（约75）。
+    list($pic_width,$pic_height,$type) =getimagesize($srcFile);
+    if($dstX==null){$dstX = $pic_width;};
+    if($dstY==null){$dsty = $pic_height;};
+    switch ($type){
+        case 1:
+            $im = imagecreatefromgif($srcFile);
+            break;
+        case 2:
+            $im = imagecreatefromjpeg($srcFile);
+            break;
+        case 3:
+            $im = imagecreatefrompng($srcFile);
+            break;
+        case 6:
+            $im = ImageCreateFromBMP( $srcFile );
+            break;
+    }
+    $ni=imagecreatetruecolor($dstX,$dstY);
+    imagecopyresampled($ni,$im,0,0,0,0,$dstX,$dstY,$pic_width,$pic_height);
+    imagejpeg($ni,$dstFile,$quality);
+    imagedestroy($im);
+    imagedestroy($ni);
+}
