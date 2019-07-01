@@ -1,0 +1,59 @@
+if(empty($_GET['No'])){
+    echo json_encode("no");
+    die;
+}
+$url = '../';
+include_once('./phpqrcode.php');
+$value = is_https().$_SERVER['SERVER_NAME'].'/mobile/qr/index.php/M2/index?mInvoice_No='.$_GET['No'];
+$errorCorrentionLevel = 'L'; //容错级别
+$matrixPoinSize = 6; //生成图片大小
+//生成二维码,第二个参数为二维码保存路径
+QRcode::png($value,$url.$_GET['No'].'.png',$errorCorrentionLevel,$matrixPoinSize,2);
+// foreachDir($url,'png',"jpg");
+$d = scandir($url);
+
+for($a=2;$a<=count($d);$a++){
+    if($d[$a]==$_GET['No'].'.png'){
+
+        ImageToJPG("./".$_GET['No'].".png",$_GET['No'].".jpg","222",'222');
+        echo json_encode("OK");
+        break;
+    }
+}
+die;
+
+function is_https() {
+    if ( !empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+        return "https://";
+    } elseif ( isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' ) {
+        return "https://";
+    } elseif ( !empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !==
+        'off') {
+        return "https://";
+    }
+    return "http://";
+}
+//ImageToJPG('源文件名','目标文件名',目标宽,目标高);
+function ImageToJPG($srcFile,$dstFile,$dstX,$dstY){
+    $quality=80;
+    list($pic_width,$pic_height,$type) =getimagesize($srcFile);
+    switch ($type){
+        case 1:
+            $im = imagecreatefromgif($srcFile);
+            break;
+        case 2:
+            $im = imagecreatefromjpeg($srcFile);
+            break;
+        case 3:
+            $im = imagecreatefrompng($srcFile);
+            break;
+        case 6:
+            $im = ImageCreateFromBMP( $srcFile );
+            break;
+    }
+    $ni=imagecreatetruecolor($dstX,$dstY);
+    imagecopyresampled($ni,$im,0,0,0,0,$dstX,$dstY,$pic_width,$pic_height);
+    imagejpeg($ni,$dstFile,$quality);
+    imagedestroy($im);
+    imagedestroy($ni);
+}
